@@ -17,7 +17,7 @@ const port = 3001;
 
 // Initialize OpenAI with API key from environment variables
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 app.use(cors());
@@ -37,10 +37,10 @@ app.post('/api/process-text', async (req, res) => {
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
+          role: 'system',
           content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
           - Date
           - Time
@@ -53,15 +53,20 @@ app.post('/api/process-text', async (req, res) => {
           Title: [title]
           Location: [location]
           
-          Separate each event with a blank line.`
+          Separate each event with a blank line.
+          
+          Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
+          BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel;
+
+          Look out for any other abbreviations and try your best to guess. If the location seems like a proper noun like <GIUMARRA>, feel free to ignore it.`,
         },
         {
-          role: "user",
-          content: text
-        }
+          role: 'user',
+          content: text,
+        },
       ],
       temperature: 0.7,
-      max_tokens: 2000
+      max_tokens: 2000,
     });
 
     // Parse the response and structure it for CSV
@@ -70,18 +75,20 @@ app.post('/api/process-text', async (req, res) => {
     // Convert to CSV
     const csv = stringify(events, {
       header: true,
-      columns: ['Date', 'Time', 'Title', 'Location']
+      columns: ['Date', 'Time', 'Title', 'Location'],
     });
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=calendar-events.csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=calendar-events.csv'
+    );
     res.send(csv);
-
   } catch (error) {
     console.error('Processing error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to process text',
-      details: error.message 
+      details: error.message,
     });
   }
 });
@@ -89,9 +96,9 @@ app.post('/api/process-text', async (req, res) => {
 function parseOpenAIResponse(content) {
   const events = [];
   let currentEvent = {};
-  
+
   const lines = content.split('\n');
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) {
