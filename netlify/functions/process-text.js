@@ -44,16 +44,11 @@ function parseOpenAIResponse(content) {
 }
 
 export const handler = async (event, context) => {
-  // Only allow POST requests
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
-  }
-
   try {
     const { text } = JSON.parse(event.body);
+
+    // Log received input
+    console.log('📥 Received text input:', text.substring(0, 100) + '...');
 
     if (!text) {
       return {
@@ -70,6 +65,7 @@ export const handler = async (event, context) => {
       };
     }
 
+    console.log('🤖 Sending request to OpenAI...');
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -103,8 +99,14 @@ export const handler = async (event, context) => {
       max_tokens: 2000,
     });
 
+    // Log OpenAI's response
+    console.log('✨ Received response from OpenAI:', response.choices[0].message.content);
+
     // Parse the response and structure it for CSV
     const events = parseOpenAIResponse(response.choices[0].message.content);
+    
+    // Log parsed events
+    console.log('📊 Parsed events:', JSON.stringify(events, null, 2));
 
     return {
       statusCode: 200,
@@ -114,7 +116,7 @@ export const handler = async (event, context) => {
       body: JSON.stringify(events),
     };
   } catch (error) {
-    console.error('Processing error:', error);
+    console.error('❌ Processing error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({
