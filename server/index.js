@@ -15,9 +15,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Initialize OpenAI with API key from environment variables
+// Initialize OpenAI with API key from Netlify environment variables
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.VITE_OPENAI_API_KEY,
 });
 
 app.use(cors());
@@ -32,7 +32,7 @@ app.post('/api/process-text', async (req, res) => {
     }
 
     // Verify API key before processing
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.VITE_OPENAI_API_KEY) {
       return res.status(500).json({ error: 'OpenAI API key not configured' });
     }
 
@@ -132,8 +132,8 @@ function parseOpenAIResponse(content) {
 }
 
 // Start server only if API key is configured
-if (!process.env.OPENAI_API_KEY) {
-  console.error('Error: OPENAI_API_KEY is not set in environment variables');
+if (!process.env.VITE_OPENAI_API_KEY) {
+  console.error('Error: VITE_OPENAI_API_KEY is not set in environment variables');
   process.exit(1);
 }
 
