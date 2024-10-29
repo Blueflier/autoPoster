@@ -2,12 +2,23 @@ import React, { useState, useCallback } from 'react';
 import { Calendar, FileDown, Loader2, Upload } from 'lucide-react';
 import axios from 'axios';
 import { ImageGenerator } from './components/ImageGenerator';
+import { CSVPreview } from './components/CSVPreview';
+
+interface CSVData {
+  Date: string;
+  Time: string;
+  Title: string;
+  Location: string;
+  [key: string]: string;
+}
 
 export function App() {
   const [text, setText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [csvData, setCsvData] = useState<Array<any> | null>(null);
+  const [parsedData, setParsedData] = useState<CSVData[] | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showImageGenerator, setShowImageGenerator] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -25,7 +36,7 @@ export function App() {
         { responseType: 'blob' }
       );
 
-      // Parse the CSV data for the image generator
+      // Parse the CSV data for preview
       const reader = new FileReader();
       reader.onload = () => {
         const csvText = reader.result as string;
@@ -37,19 +48,12 @@ export function App() {
             obj[header.trim()] = values[index]?.trim();
             return obj;
           }, {} as any);
-        }).filter(row => row.Date); // Filter out empty rows
-        setCsvData(data);
+        }).filter(row => row.Date);
+        setParsedData(data);
+        setShowPreview(true);
+        setShowImageGenerator(false);
       };
       reader.readAsText(new Blob([response.data]));
-
-      // Create download link for CSV
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'calendar-events.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to process text');
     } finally {
@@ -72,11 +76,30 @@ export function App() {
             return obj;
           }, {} as any);
         }).filter(row => row.Date);
-        setCsvData(data);
+        setParsedData(data);
       };
       reader.readAsText(file);
     }
   }, []);
+
+  const handleDataUpdate = (newData: Array<any>) => {
+    setParsedData(newData);
+  };
+
+  const handleDownload = () => {
+    if (!parsedData) return;
+
+    // Convert the parsed data to CSV format
+    const csvData = parsedData.map(row => Object.values(row).join(',')).join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'calendar-events.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -156,7 +179,37 @@ export function App() {
           </div>
         </div>
 
-        {csvData && <ImageGenerator csvData={csvData} />}
+        {showPreview && (
+          <>
+            <CSVPreview 
+              data={parsedData || []} 
+              onUpdate={handleDataUpdate} 
+              onDownload={handleDownload} 
+            />
+            
+            {!showImageGenerator && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => setShowImageGenerator(true)}
+                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+                >
+                  Generate Instagram Stories
+                </button>
+              </div>
+            )}
+
+            {showImageGenerator && (
+              <div className="mt-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Generate Instagram Stories
+                </h2>
+                <ImageGenerator 
+                  csvData={parsedData || []} 
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
