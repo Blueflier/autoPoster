@@ -34,25 +34,12 @@ export function App() {
       console.log('📤 Frontend sending text:', text.substring(0, 100) + '...');
 
       const response = await axios.post('/.netlify/functions/process-text', { text });
-
-      // Parse the CSV data for preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        const csvText = reader.result as string;
-        const rows = csvText.split('\n');
-        const headers = rows[0].split(',');
-        const data = rows.slice(1).map(row => {
-          const values = row.split(',');
-          return headers.reduce((obj, header, index) => {
-            obj[header.trim()] = values[index]?.trim();
-            return obj;
-          }, {} as any);
-        }).filter(row => row.Date);
-        setParsedData(data);
-        setShowPreview(true);
-        setShowImageGenerator(false);
-      };
-      reader.readAsText(new Blob([response.data]));
+      
+      // The response is already JSON, no need for FileReader
+      const events = response.data;
+      setParsedData(events);
+      setShowPreview(true);
+      setShowImageGenerator(false);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to process text');
     } finally {

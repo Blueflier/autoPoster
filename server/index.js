@@ -55,12 +55,6 @@ app.post('/api/process-text', async (req, res) => {
   }
 });
 
-// Start server only if API key is configured
-if (!process.env.VITE_OPENAI_API_KEY) {
-  console.error('Error: VITE_OPENAI_API_KEY is not set in environment variables');
-  process.exit(1);
-}
-
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

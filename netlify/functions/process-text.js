@@ -51,10 +51,9 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Log API key presence (not the actual key!)
-    console.log('🔑 API Key present?:', !!process.env.VITE_OPENAI_API_KEY);
+    console.log('🔑 API Key present?:', !!process.env.OPENAI_API_KEY);
 
-    if (!process.env.VITE_OPENAI_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       console.log('❌ Missing OpenAI API key');
       return {
         statusCode: 500,
@@ -64,7 +63,7 @@ export const handler = async (event, context) => {
 
     console.log('🤖 Initializing OpenAI client...');
     const openai = new OpenAI({
-      apiKey: process.env.VITE_OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     console.log('🤖 Sending request to OpenAI...');
