@@ -1,10 +1,5 @@
 import OpenAI from 'openai';
 
-// Initialize OpenAI with API key from Netlify environment variables
-const openai = new OpenAI({
-  apiKey: process.env.VITE_OPENAI_API_KEY,
-});
-
 function parseOpenAIResponse(content) {
   const events = [];
   let currentEvent = {};
@@ -45,17 +40,8 @@ function parseOpenAIResponse(content) {
 
 export const handler = async (event, context) => {
   try {
-    // Log the raw event body
-    console.log('📦 Raw event body:', event.body);
-
     const { text } = JSON.parse(event.body);
-
-    // Log parsed text input with more detail
-    console.log('📥 Received text input:', {
-      length: text?.length || 0,
-      preview: text?.substring(0, 100) + '...',
-      isString: typeof text === 'string'
-    });
+    console.log('📥 Received text input:', text.substring(0, 100) + '...');
 
     if (!text) {
       console.log('❌ No text provided');
@@ -65,7 +51,9 @@ export const handler = async (event, context) => {
       };
     }
 
-    // Verify API key before processing
+    // Log API key presence (not the actual key!)
+    console.log('🔑 API Key present?:', !!process.env.VITE_OPENAI_API_KEY);
+
     if (!process.env.VITE_OPENAI_API_KEY) {
       console.log('❌ Missing OpenAI API key');
       return {
@@ -74,67 +62,94 @@ export const handler = async (event, context) => {
       };
     }
 
-    console.log('🤖 Sending request to OpenAI with model:', 'gpt-4o-mini');
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
-          - Date
-          - Time
-          - Title
-          - Location
-          
-          Return the data in this exact format for each event:
-          Date: [date]
-          Time: [time]
-          Title: [title]
-          Location: [location]
-          
-          Separate each event with a blank line.
-          
-          Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
-          BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;
-
-          Look out for any other abbreviations and try your best to guess. If the location seems like a proper noun like <GIUMARRA>, feel free to ignore it.`,
-        },
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
+    console.log('🤖 Initializing OpenAI client...');
+    const openai = new OpenAI({
+      apiKey: process.env.VITE_OPENAI_API_KEY,
     });
 
-    console.log('✨ OpenAI response status:', response.choices ? 'Success' : 'No choices returned');
-    console.log('✨ First choice content:', response.choices[0]?.message?.content?.substring(0, 100) + '...');
+    console.log('🤖 Sending request to OpenAI...');
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
+            - Date
+            - Time
+            - Title
+            - Location
+            
+            Return the data in this exact format for each event:
+            Date: [date]
+            Time: [time]
+            Title: [title]
+            Location: [location]
+            
+            Separate each event with a blank line.
+            
+            Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
+            BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;
 
-    // Parse the response and structure it for CSV
-    const events = parseOpenAIResponse(response.choices[0].message.content);
-    
-    console.log('📊 Parsed events count:', events.length);
-    console.log('📊 First event:', events[0]);
+            Look out for any other abbreviations and try your best to guess. If the location seems like a proper noun like <GIUMARRA>, feel free to ignore it.`,
+          },
+          {
+            role: 'user',
+            content: text,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
 
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(events),
-    };
+      console.log('✨ OpenAI response received:', {
+        status: 'success',
+        choicesLength: response.choices?.length,
+        firstChoice: response.choices[0]?.message?.content?.substring(0, 100) + '...'
+      });
+
+      const events = parseOpenAIResponse(response.choices[0].message.content);
+      console.log('📊 Parsed events:', JSON.stringify(events, null, 2));
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(events),
+      };
+
+    } catch (openaiError) {
+      console.error('❌ OpenAI API Error:', {
+        name: openaiError.name,
+        message: openaiError.message,
+        status: openaiError.status,
+        response: openaiError.response?.data,
+        stack: openaiError.stack
+      });
+
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          error: 'OpenAI API Error',
+          details: openaiError.message,
+          status: openaiError.status
+        }),
+      };
+    }
+
   } catch (error) {
-    console.error('❌ Processing error:', {
+    console.error('❌ General Processing Error:', {
+      name: error.name,
       message: error.message,
-      stack: error.stack,
-      name: error.name
+      stack: error.stack
     });
+
     return {
       statusCode: 500,
       body: JSON.stringify({
         error: 'Failed to process text',
-        details: error.message,
+        details: error.message
       }),
     };
   }
