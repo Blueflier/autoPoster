@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 // Initialize OpenAI with API key from environment variables
 const openai = new OpenAI({
@@ -56,7 +56,7 @@ app.post('/api/process-text', async (req, res) => {
           Separate each event with a blank line.
           
           Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
-          BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel;
+          BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;
 
           Look out for any other abbreviations and try your best to guess. If the location seems like a proper noun like <GIUMARRA>, feel free to ignore it.`,
         },
