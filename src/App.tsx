@@ -31,7 +31,7 @@ export function App() {
     setError(null);
 
     try {
-      const response = await axios.post('/api/process-text', 
+      const response = await axios.post('/.netlify/functions/process-text', 
         { text },
         { responseType: 'blob' }
       );
