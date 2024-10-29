@@ -45,12 +45,20 @@ function parseOpenAIResponse(content) {
 
 export const handler = async (event, context) => {
   try {
+    // Log the raw event body
+    console.log('📦 Raw event body:', event.body);
+
     const { text } = JSON.parse(event.body);
 
-    // Log received input
-    console.log('📥 Received text input:', text.substring(0, 100) + '...');
+    // Log parsed text input with more detail
+    console.log('📥 Received text input:', {
+      length: text?.length || 0,
+      preview: text?.substring(0, 100) + '...',
+      isString: typeof text === 'string'
+    });
 
     if (!text) {
+      console.log('❌ No text provided');
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'No text provided' }),
@@ -59,13 +67,14 @@ export const handler = async (event, context) => {
 
     // Verify API key before processing
     if (!process.env.VITE_OPENAI_API_KEY) {
+      console.log('❌ Missing OpenAI API key');
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'OpenAI API key not configured' }),
       };
     }
 
-    console.log('🤖 Sending request to OpenAI...');
+    console.log('🤖 Sending request to OpenAI with model:', 'gpt-4o-mini');
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -99,14 +108,14 @@ export const handler = async (event, context) => {
       max_tokens: 2000,
     });
 
-    // Log OpenAI's response
-    console.log('✨ Received response from OpenAI:', response.choices[0].message.content);
+    console.log('✨ OpenAI response status:', response.choices ? 'Success' : 'No choices returned');
+    console.log('✨ First choice content:', response.choices[0]?.message?.content?.substring(0, 100) + '...');
 
     // Parse the response and structure it for CSV
     const events = parseOpenAIResponse(response.choices[0].message.content);
     
-    // Log parsed events
-    console.log('📊 Parsed events:', JSON.stringify(events, null, 2));
+    console.log('📊 Parsed events count:', events.length);
+    console.log('📊 First event:', events[0]);
 
     return {
       statusCode: 200,
@@ -116,7 +125,11 @@ export const handler = async (event, context) => {
       body: JSON.stringify(events),
     };
   } catch (error) {
-    console.error('❌ Processing error:', error);
+    console.error('❌ Processing error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return {
       statusCode: 500,
       body: JSON.stringify({

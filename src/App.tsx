@@ -31,10 +31,9 @@ export function App() {
     setError(null);
 
     try {
-      const response = await axios.post('/.netlify/functions/process-text', 
-        { text },
-        { responseType: 'blob' }
-      );
+      console.log('📤 Frontend sending text:', text.substring(0, 100) + '...');
+
+      const response = await axios.post('/.netlify/functions/process-text', { text });
 
       // Parse the CSV data for preview
       const reader = new FileReader();
