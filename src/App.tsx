@@ -20,7 +20,7 @@ export function App() {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/process-text', 
+      const response = await axios.post('/api/process-text', 
         { text },
         { responseType: 'blob' }
       );
