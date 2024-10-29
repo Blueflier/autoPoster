@@ -187,22 +187,17 @@ export function App() {
               onDownload={handleDownload} 
             />
             
-            {!showImageGenerator && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={() => setShowImageGenerator(true)}
-                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
-                >
-                  Generate Instagram Stories
-                </button>
-              </div>
-            )}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => setShowImageGenerator(true)}
+                className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+              >
+                Generate Instagram Stories
+              </button>
+            </div>
 
             {showImageGenerator && (
               <div className="mt-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Generate Instagram Stories
-                </h2>
                 <ImageGenerator 
                   csvData={parsedData || []} 
                 />
