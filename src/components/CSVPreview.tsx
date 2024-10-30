@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Edit2, Save, X } from 'lucide-react';
 
 interface CSVData {
-  Date: string;
   Time: string;
   Title: string;
   Location: string;

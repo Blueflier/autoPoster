@@ -1,38 +1,21 @@
 import OpenAI from 'openai';
 
 function parseOpenAIResponse(content) {
+  const lines = content.trim().split('\n');
   const events = [];
-  let currentEvent = {};
 
-  const lines = content.split('\n');
+  // Skip the header row if it exists
+  const startIndex = lines[0].toLowerCase().includes('time,title,location') ? 1 : 0;
 
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) {
-      if (Object.keys(currentEvent).length > 0) {
-        events.push(currentEvent);
-        currentEvent = {};
-      }
-      continue;
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const [Time, Title, Location] = line.split(',').map(item => item.trim());
+    
+    if (Time && Title && Location) {
+      events.push({ Time, Title, Location });
     }
-
-    if (trimmedLine.startsWith('Date:')) {
-      if (Object.keys(currentEvent).length > 0) {
-        events.push(currentEvent);
-        currentEvent = {};
-      }
-      currentEvent.Date = trimmedLine.substring(5).trim();
-    } else if (trimmedLine.startsWith('Time:')) {
-      currentEvent.Time = trimmedLine.substring(5).trim();
-    } else if (trimmedLine.startsWith('Title:')) {
-      currentEvent.Title = trimmedLine.substring(6).trim();
-    } else if (trimmedLine.startsWith('Location:')) {
-      currentEvent.Location = trimmedLine.substring(9).trim();
-    }
-  }
-
-  if (Object.keys(currentEvent).length > 0) {
-    events.push(currentEvent);
   }
 
   return events;
@@ -74,18 +57,16 @@ export const handler = async (event, context) => {
           {
             role: 'system',
             content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
-            - Date
             - Time
             - Title
             - Location
             
             Return the data in this exact format for each event:
-            Date: [date]
-            Time: [time]
+            Time: [time]am/pm
             Title: [title]
             Location: [location]
             
-            Separate each event with a blank line.
+            Separate each event with a comma, the headers should be Time,Title,Location.
             
             Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
             BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;

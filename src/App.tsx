@@ -5,7 +5,6 @@ import { ImageGenerator } from './components/ImageGenerator';
 import { CSVPreview } from './components/CSVPreview';
 
 interface CSVData {
-  Date: string;
   Time: string;
   Title: string;
   Location: string;
@@ -51,19 +50,47 @@ export function App() {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
+      
       reader.onload = (e) => {
-        const text = e.target?.result as string;
-        const rows = text.split('\n');
-        const headers = rows[0].split(',');
-        const data = rows.slice(1).map(row => {
-          const values = row.split(',');
-          return headers.reduce((obj, header, index) => {
-            obj[header.trim()] = values[index]?.trim();
-            return obj;
-          }, {} as any);
-        }).filter(row => row.Date);
-        setParsedData(data);
+        try {
+          const text = e.target?.result as string;
+          console.log('Raw content:', text);
+          
+          // Split into rows and remove empty lines
+          const rows = text.split('\n')
+            .filter(row => row.trim())
+            .filter(row => !row.toLowerCase().includes('time,title,location')); // Remove header row
+          
+          const data = rows.map(row => {
+            const [Time, Title, Location] = row.split(',').map(item => item.trim());
+            return { Time, Title, Location };
+          });
+
+          // Filter out any invalid rows
+          const validData = data.filter(row => row.Time && row.Title && row.Location);
+          
+          console.log('Final parsed data:', validData);
+          
+          if (validData.length === 0) {
+            setError('No valid data found in file');
+            return;
+          }
+          
+          setParsedData(validData);
+          setShowPreview(true);
+          setShowImageGenerator(true);
+          setError(null);
+        } catch (err) {
+          console.error('Error parsing file:', err);
+          setError('Failed to parse file. Please check the format.');
+        }
       };
+      
+      reader.onerror = () => {
+        setError('Failed to read file');
+        console.error('FileReader error:', reader.error);
+      };
+      
       reader.readAsText(file);
     }
   }, []);
@@ -169,7 +196,7 @@ export function App() {
           <>
             <CSVPreview 
               data={parsedData || []} 
-              onUpdate={handleDataUpdate} 
+              onUpdate={(newData: CSVData[]) => handleDataUpdate(newData)} 
               onDownload={handleDownload} 
             />
             
