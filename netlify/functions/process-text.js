@@ -56,22 +56,16 @@ export const handler = async (event, context) => {
         messages: [
           {
             role: 'system',
-            content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
+            content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields for csv output:
             - Time
             - Title
             - Location
             
             Return the data in this exact format for each event:
-            Time: [time]am/pm
-            Title: [title]
-            Location: [location]
-            
-            Separate each event with a comma, the headers should be Time,Title,Location.
-            
+            time,title,location
+                        
             Some of the Location fields are abbreviated so please un-abbreviate them based on these examples:
-            BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;
-
-            Look out for any other abbreviations and try your best to guess. If the location seems like a proper noun like <GIUMARRA>, feel free to ignore it.`,
+            BUSNBL = Business; METZGR = Metzger; TAEAST = TalbotEast; SUTHLD ETHLEE AUD = Sutherland/Ethel; SOUBRU=Soubaru; feinbr = Feinberg;`,
           },
           {
             role: 'user',
