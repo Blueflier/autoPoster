@@ -1,22 +1,5 @@
 import { fabric } from 'fabric';
 
-export const gradientCombinations = [
-  ['#4f46e5', '#818cf8'],
-  ['#2563eb', '#60a5fa'],
-  ['#7c3aed', '#a78bfa'],
-  ['#db2777', '#f472b6'],
-  ['#ea580c', '#fb923c'],
-  ['#059669', '#34d399'],
-  ['#0d9488', '#2dd4bf'],
-  ['#4338ca', '#818cf8'],
-  ['#6d28d9', '#a78bfa'],
-  ['#be185d', '#f472b6'],
-];
-
-export const getRandomGradient = () => {
-  const index = Math.floor(Math.random() * gradientCombinations.length);
-  return gradientCombinations[index];
-};
 
 export const formatFileName = (title: string) => {
   try {
@@ -41,54 +24,58 @@ export const generateSingleImage = async (event: {
   Location: string;
 }): Promise<{ dataUrl: string; fileName: string }> => {
   const canvas = new fabric.Canvas(null, {
-    width: 600,
-    height: 800,
-    backgroundColor: '#e5dfd1',
+    width: 1080,
+    height: 1920,
+    backgroundColor: '#ddd2c2',
   });
 
   // Add the top horizontal line
-  const topLine = new fabric.Line([50, 140, 550, 140], {
-    stroke: '#9b3f3f',
-    strokeWidth: 2
+  const topLine = new fabric.Line([100, 380, 980, 380], {
+    stroke: '#af3a3a',
+    strokeWidth: 6
   });
   canvas.add(topLine);
 
   // Add the bottom horizontal line
-  const bottomLine = new fabric.Line([50, 500, 550, 500], {
-    stroke: '#9b3f3f',
-    strokeWidth: 2
+  const bottomLine = new fabric.Line([100, 1150, 980, 1150], {
+    stroke: '#af3a3a',
+    strokeWidth: 6
   });
   canvas.add(bottomLine);
 
   // Add the title/club name
   const title = new fabric.Text(event.Title || 'Untitled Event', {
-    left: 200,
-    top: 520,
-    fontFamily: 'Times New Roman',
-    fontSize: 36,
-    fill: '#9b3f3f',
-    fontWeight: 'bold'
+    top: 1400,
+    fontFamily: 'Alice',
+    fontSize: 80,
+    fill: '#af3a3a',
+    fontWeight: 'bold',
+    originX: 'center',
+    originY: 'center',
+    left: canvas.getWidth() / 2 // center horizontally
   });
   canvas.add(title);
 
   // Add the time
   const timeText = new fabric.Text(event.Time || 'Time TBD', {
-    left: 185,
-    top: 560,
-    fontFamily: 'Times New Roman',
-    fontSize: 28,
-    fill: '#9b3f3f',
-    fontWeight: 'bold'
+    top: 1500,
+    fontFamily: 'Alice',
+    fontSize: 90,
+    fill: '#af3a3a',
+    fontWeight: 'bold',
+    originX: 'center',
+    originY: 'center',
+    left: canvas.getWidth() / 2 
   });
   canvas.add(timeText);
 
   // Add "Biola Today" text
   const biolaToday = new fabric.Text('Biola\nToday', {
-    left: 450,
-    top: 700,
-    fontFamily: 'Times New Roman',
-    fontSize: 20,
-    fill: '#9b3f3f',
+    left: 850,
+    top: 1700,
+    fontFamily: 'Alice',
+    fontSize: 70,
+    fill: '#af3a3a',
     fontStyle: 'italic',
     fontWeight: 'bold'
   });

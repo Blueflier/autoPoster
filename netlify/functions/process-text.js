@@ -62,7 +62,7 @@ export const handler = async (event, context) => {
             - Location
             
             Return the data in this exact format for each event:
-            Time: [time]
+            Time: [time]am/pm
             Title: [title]
             Location: [location]
             
