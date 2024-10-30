@@ -74,13 +74,11 @@ export const handler = async (event, context) => {
           {
             role: 'system',
             content: `You are a calendar data extraction assistant. Extract events from the provided text and format them with these fields:
-            - Date
             - Time
             - Title
             - Location
             
             Return the data in this exact format for each event:
-            Date: [date]
             Time: [time]
             Title: [title]
             Location: [location]

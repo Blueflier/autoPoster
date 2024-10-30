@@ -3,7 +3,6 @@ import { Download } from 'lucide-react';
 
 interface EventCardProps {
   event: {
-    Date: string;
     Time: string;
     Title: string;
     Location: string;
@@ -18,7 +17,7 @@ export function EventCard({ event, onGenerate }: EventCardProps) {
         {event.Title || 'Untitled Event'}
       </h3>
       <p className="text-gray-600">
-        {event.Date || 'Date TBD'} at {event.Time || 'Time TBD'}
+        {event.Time || 'Time TBD'}
       </p>
       <p className="text-gray-600">{event.Location || 'Location TBD'}</p>
       <button

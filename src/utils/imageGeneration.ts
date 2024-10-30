@@ -50,202 +50,75 @@ export const formatFileName = (date: string, title: string) => {
   }
 };
 
-const backgroundStyles = [
-  'gradient',
-  'scattered-squares',
-  'floating-circles',
-  'diagonal-lines',
-  'geometric-pattern',
-  'dots-grid'
-] as const;
-
-const addGradientBackground = (canvas: fabric.Canvas, colorStart: string, colorEnd: string) => {
-  const gradient = new fabric.Gradient({
-    type: 'linear',
-    coords: { x1: 0, y1: 0, x2: 0, y2: canvas.height! },
-    colorStops: [
-      { offset: 0, color: colorStart },
-      { offset: 1, color: colorEnd },
-    ],
-  });
-
-  const background = new fabric.Rect({
-    width: canvas.width,
-    height: canvas.height,
-    fill: gradient,
-  });
-  canvas.add(background);
-};
-
-const addScatteredSquares = (canvas: fabric.Canvas, baseColor: string) => {
-  for (let i = 0; i < 15; i++) {
-    const size = Math.random() * 200 + 50;
-    const square = new fabric.Rect({
-      left: Math.random() * canvas.width!,
-      top: Math.random() * canvas.height!,
-      width: size,
-      height: size,
-      angle: Math.random() * 45,
-      fill: baseColor,
-      opacity: 0.1,
-    });
-    canvas.add(square);
-  }
-};
-
-const addFloatingCircles = (canvas: fabric.Canvas, baseColor: string) => {
-  for (let i = 0; i < 20; i++) {
-    const radius = Math.random() * 150 + 30;
-    const circle = new fabric.Circle({
-      left: Math.random() * canvas.width!,
-      top: Math.random() * canvas.height!,
-      radius: radius,
-      fill: baseColor,
-      opacity: 0.1,
-    });
-    canvas.add(circle);
-  }
-};
-
-const addDiagonalLines = (canvas: fabric.Canvas, baseColor: string) => {
-  for (let i = 0; i < 10; i++) {
-    const line = new fabric.Line([
-      Math.random() * canvas.width!,
-      Math.random() * canvas.height!,
-      Math.random() * canvas.width!,
-      Math.random() * canvas.height!
-    ], {
-      stroke: baseColor,
-      strokeWidth: 5,
-      opacity: 0.1,
-    });
-    canvas.add(line);
-  }
-};
-
-const addGeometricPattern = (canvas: fabric.Canvas, baseColor: string) => {
-  const patternSize = 200;
-  for (let x = 0; x < canvas.width!; x += patternSize) {
-    for (let y = 0; y < canvas.height!; y += patternSize) {
-      const shape = Math.random() > 0.5 ? 
-        new fabric.Triangle({
-          left: x,
-          top: y,
-          width: patternSize,
-          height: patternSize,
-        }) :
-        new fabric.Rect({
-          left: x,
-          top: y,
-          width: patternSize,
-          height: patternSize,
-        });
-      
-      shape.set({
-        fill: baseColor,
-        opacity: 0.1,
-        angle: Math.random() * 90,
-      });
-      canvas.add(shape);
-    }
-  }
-};
-
-const addDotsGrid = (canvas: fabric.Canvas, baseColor: string) => {
-  const spacing = 100;
-  for (let x = 0; x < canvas.width!; x += spacing) {
-    for (let y = 0; y < canvas.height!; y += spacing) {
-      const circle = new fabric.Circle({
-        left: x,
-        top: y,
-        radius: 5,
-        fill: baseColor,
-        opacity: 0.2,
-      });
-      canvas.add(circle);
-    }
-  }
-};
-
 export const generateSingleImage = async (event: {
-  Date: string;
   Time: string;
   Title: string;
   Location: string;
 }): Promise<{ dataUrl: string; fileName: string }> => {
   const canvas = new fabric.Canvas(null, {
-    width: 1080,
-    height: 1920,
-    backgroundColor: '#ffffff',
+    width: 600,
+    height: 800,
+    backgroundColor: '#e5dfd1',
   });
 
-  const [colorStart, colorEnd] = getRandomGradient();
-  
-  // Randomly select a background style
-  const backgroundStyle = backgroundStyles[Math.floor(Math.random() * backgroundStyles.length)];
-  
-  // Apply the selected background style
-  addGradientBackground(canvas, colorStart, colorEnd);
-  
-  switch (backgroundStyle) {
-    case 'scattered-squares':
-      addScatteredSquares(canvas, '#ffffff');
-      break;
-    case 'floating-circles':
-      addFloatingCircles(canvas, '#ffffff');
-      break;
-    case 'diagonal-lines':
-      addDiagonalLines(canvas, '#ffffff');
-      break;
-    case 'geometric-pattern':
-      addGeometricPattern(canvas, '#ffffff');
-      break;
-    case 'dots-grid':
-      addDotsGrid(canvas, '#ffffff');
-      break;
-  }
+  // Add the top horizontal line
+  const topLine = new fabric.Line([50, 140, 550, 140], {
+    stroke: '#9b3f3f',
+    strokeWidth: 2
+  });
+  canvas.add(topLine);
 
-  // Add text elements (keeping the same positioning)
+  // Add the bottom horizontal line
+  const bottomLine = new fabric.Line([50, 500, 550, 500], {
+    stroke: '#9b3f3f',
+    strokeWidth: 2
+  });
+  canvas.add(bottomLine);
+
+  // Add the title/club name
   const title = new fabric.Text(event.Title || 'Untitled Event', {
-    left: 50,
-    top: canvas.height! / 2 - 200,
-    fontFamily: 'Arial',
-    fontSize: 72,
-    fill: '#ffffff',
-    width: canvas.width! - 100,
-    fontWeight: 'bold',
+    left: 200,
+    top: 520,
+    fontFamily: 'Times New Roman',
+    fontSize: 36,
+    fill: '#9b3f3f',
+    fontWeight: 'bold'
   });
+  canvas.add(title);
 
-  const dateTime = new fabric.Text(
-    `${event.Date || 'Date TBD'} at ${event.Time || 'Time TBD'}`,
-    {
-      left: 50,
-      top: canvas.height! / 2,
-      fontFamily: 'Arial',
-      fontSize: 48,
-      fill: '#ffffff',
-      width: canvas.width! - 100,
-    }
-  );
-
-  const location = new fabric.Text(event.Location || 'Location TBD', {
-    left: 50,
-    top: canvas.height! / 2 + 100,
-    fontFamily: 'Arial',
-    fontSize: 48,
-    fill: '#ffffff',
-    width: canvas.width! - 100,
+  // Add the time
+  const timeText = new fabric.Text(event.Time || 'Time TBD', {
+    left: 185,
+    top: 560,
+    fontFamily: 'Times New Roman',
+    fontSize: 28,
+    fill: '#9b3f3f',
+    fontWeight: 'bold'
   });
+  canvas.add(timeText);
 
-  canvas.add(title, dateTime, location);
+  // Add "Biola Today" text
+  const biolaToday = new fabric.Text('Biola\nToday', {
+    left: 450,
+    top: 700,
+    fontFamily: 'Times New Roman',
+    fontSize: 20,
+    fill: '#9b3f3f',
+    fontStyle: 'italic',
+    fontWeight: 'bold'
+  });
+  canvas.add(biolaToday);
 
   const dataUrl = canvas.toDataURL({
     format: 'png',
     quality: 1,
   });
 
+  // Simplified fileName without date
+  const fileName = `${event.Title.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`;
+
   return {
     dataUrl,
-    fileName: formatFileName(event.Date, event.Title),
+    fileName,
   };
 };
