@@ -18,23 +18,8 @@ export const getRandomGradient = () => {
   return gradientCombinations[index];
 };
 
-export const formatFileName = (date: string, title: string) => {
+export const formatFileName = (title: string) => {
   try {
-    let formattedDate = '';
-    if (date) {
-      const dateObj = new Date(date);
-      if (!isNaN(dateObj.getTime())) {
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        formattedDate = `${month}-${day}`;
-      } else {
-        const now = new Date();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        formattedDate = `${month}-${day}`;
-      }
-    }
-
     const cleanTitle = title
       ? title
           .toLowerCase()
@@ -43,7 +28,7 @@ export const formatFileName = (date: string, title: string) => {
           .slice(0, 50)
       : 'untitled';
 
-    return `${formattedDate}-${cleanTitle}.png`;
+    return `${cleanTitle}.png`;
   } catch (error) {
     console.error('Error formatting filename:', error);
     return `event-${Date.now()}.png`;

@@ -6,7 +6,6 @@ import { generateSingleImage } from '../utils/imageGeneration';
 
 interface ImageGeneratorProps {
   csvData: Array<{
-    Date: string;
     Time: string;
     Title: string;
     Location: string;
@@ -17,7 +16,6 @@ export function ImageGenerator({ csvData }: ImageGeneratorProps) {
   const [isGeneratingZip, setIsGeneratingZip] = React.useState(false);
 
   const generateImage = async (event: {
-    Date: string;
     Time: string;
     Title: string;
     Location: string;
